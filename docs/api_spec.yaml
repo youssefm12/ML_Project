@@ -1,0 +1,71 @@
+openapi: 3.0.0
+info:
+  title: Retail Customer Analytics API
+  description: Professional ML Inferencing Gateway for Retention and Revenue forecasting.
+  version: 1.0.2
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+paths:
+  /api/predict/churn:
+    post:
+      summary: Churn Probability Forecast
+      description: Returns the structural probability that a customer will churn based on transactional telemetry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerPayload'
+      responses:
+        '200':
+          description: Successful Inference
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: {type: boolean}
+                  churn_probability: {type: number}
+                  risk_level: {type: string}
+                  predicted_revenue: {type: number}
+        '400':
+          description: Validation Error (Pydantic Boundary Violation)
+
+  /api/predict/batch:
+    post:
+      summary: High-Volume CSV Batch Processing
+      description: Upload a CSV of customers to receive a ranked risk score report.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: {type: string, format: binary}
+      responses:
+        '200':
+          description: Risk Scoring Report Generated
+          content:
+            text/csv:
+              schema: {type: string}
+
+  /api/health:
+    get:
+      summary: System Health Check
+      responses:
+        '200':
+          description: Service Operational
+
+components:
+  schemas:
+    CustomerPayload:
+      type: object
+      required: [Frequency, MonetaryTotal, TotalQuantity]
+      properties:
+        Frequency: {type: integer, minimum: 0}
+        MonetaryTotal: {type: number, minimum: 0}
+        TotalQuantity: {type: integer}
+        ReturnRatio: {type: number, minimum: 0, maximum: 1}
+        Age: {type: integer, minimum: 18}
+        SupportTicketsCount: {type: integer, minimum: 0}

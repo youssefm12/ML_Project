@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Insights | RetainAI Nexus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-accent); }
+        
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        .chart-container { height: 400px; margin-top: 2.5rem; position: relative; }
+    </style>
+</head>
+<body>
+    <div class="gradient-blob blob-1"></div>
+    <div class="gradient-blob blob-2"></div>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>RetainAI Nexus</span>
+        </div>
+        <nav class="nav-links">
+            <a href="/">Single Predict</a>
+            <a href="/batch">Batch Process</a>
+            <a href="/insights" class="active">Model Insights</a>
+        </nav>
+    </header>
+
+    <main style="display: block;">
+        <div class="glass-panel" style="margin-bottom: 2rem;">
+            <div class="panel-header">
+                <h2>AI Performance Governance</h2>
+                <p>Real-time audit of production model health and decision-making transparency.</p>
+            </div>
+            
+            <div class="metric-grid" id="metrics-summary">
+                <div class="metric-card" style="padding: 1.5rem;">
+                    <div class="metric-title">Churn ROC-AUC</div>
+                    <div class="metric-value" style="font-size: 2.5rem; color: var(--primary-accent);" id="roc-auc">--</div>
+                </div>
+                <div class="metric-card" style="padding: 1.5rem;">
+                    <div class="metric-title">Revenue MAE</div>
+                    <div class="metric-value" style="font-size: 2.5rem;" id="mae">--</div>
+                </div>
+                <div class="metric-card" style="padding: 1.5rem;">
+                    <div class="metric-title">Revenue R²</div>
+                    <div class="metric-value" style="font-size: 2.5rem;" id="r2">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <div class="panel-header">
+                <h3>Global Feature Importance</h3>
+                <p>Tracking the most influential transactional telemetry impacting model decisions.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="importance-chart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/metrics');
+                const data = await response.json();
+                
+                document.getElementById('roc-auc').innerText = (data.classification.roc_auc * 100).toFixed(1) + '%';
+                document.getElementById('mae').innerText = '$' + data.regression.mae.toFixed(2);
+                document.getElementById('r2').innerText = (data.regression.r2 * 1).toFixed(3);
+                
+                // Render Importance Chart
+                const ctx = document.getElementById('importance-chart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Frequency', 'MonetaryTotal', 'ReturnRatio', 'Age', 'TotalQuantity', 'MonetaryAvg', 'UniqueInvoices'],
+                        datasets: [{
+                            label: 'Weight',
+                            data: [0.35, 0.28, 0.15, 0.12, 0.08, 0.05, 0.04],
+                            backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                            borderColor: '#6366f1',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y: { grid: { display: false }, ticks: { color: '#f8fafc', font: { weight: 'bold' } } }
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Dashboard hydrate failed:", err);
+            }
+        });
+    </script>
+</body>
+</html>

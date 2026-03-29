@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Intelligence | RetainAI Nexus</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-accent); }
+        
+        .upload-area {
+            border: 2px dashed var(--border-light);
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--primary-accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .upload-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--primary-accent); opacity: 0.5; }
+        
+        #file-info { margin-top: 1.5rem; display: none; }
+        .file-pill {
+            background: rgba(255,255,255,0.05);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-blob blob-1"></div>
+    <div class="gradient-blob blob-2"></div>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>RetainAI Nexus</span>
+        </div>
+        <nav class="nav-links">
+            <a href="/">Single Predict</a>
+            <a href="/batch" class="active">Batch Process</a>
+            <a href="/insights">Model Insights</a>
+        </nav>
+    </header>
+
+    <main style="display: block; max-width: 900px;">
+        <div class="glass-panel">
+            <div class="panel-header">
+                <h2>Batch Risk Scoring</h2>
+                <p>Upload a CSV identifying multiple customers for automated churn and LTV probability analysis.</p>
+            </div>
+
+            <div class="upload-area" id="drop-zone">
+                <div class="upload-icon">📥</div>
+                <h3 style="margin-bottom: 0.5rem;">Drop CSV here or click to browse</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Supports .csv files up to 50MB</p>
+                <input type="file" id="file-input" accept=".csv" style="display: none;">
+            </div>
+
+            <div id="file-info">
+                <div class="file-pill">
+                    <span id="filename-display">customers_q1.csv</span>
+                    <span id="remove-file" style="cursor: pointer; color: var(--danger);">✕</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="process-btn" disabled>
+                <span>Process High-Volume Predictions</span>
+                <div class="loader" id="btn-loader"></div>
+            </button>
+
+            <div id="status-card" style="margin-top: 2rem; display: none;">
+                <div class="glass-panel" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success);">
+                    <h4 style="color: var(--success); margin-bottom: 0.5rem;">Batch Processing Complete</h4>
+                    <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">We've analyzed your customer list and generated individual risk scores.</p>
+                    <button class="btn-primary" style="margin-top: 0; background: var(--success);" id="download-btn">
+                        Download Risk Report (CSV)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast">Error processing batch file.</div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const filenameDisplay = document.getElementById('filename-display');
+        const processBtn = document.getElementById('process-btn');
+        const statusCard = document.getElementById('status-card');
+        
+        let selectedFile = null;
+        let blobUrl = null;
+
+        dropZone.onclick = () => fileInput.click();
+        
+        fileInput.onchange = (e) => handleFile(e.target.files[0]);
+
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        };
+
+        function handleFile(file) {
+            if (!file || !file.name.endsWith('.csv')) {
+                showToast("Please upload a valid CSV file.");
+                return;
+            }
+            selectedFile = file;
+            filenameDisplay.innerText = file.name;
+            fileInfo.style.display = 'block';
+            processBtn.disabled = false;
+            statusCard.style.display = 'none';
+        }
+
+        document.getElementById('remove-file').onclick = () => {
+            selectedFile = null;
+            fileInfo.style.display = 'none';
+            processBtn.disabled = true;
+            fileInput.value = '';
+        };
+
+        processBtn.onclick = async () => {
+            const loader = document.getElementById('btn-loader');
+            const btnText = processBtn.querySelector('span');
+            
+            processBtn.style.pointerEvents = 'none';
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/api/predict/batch', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Batch architecture rejected file.");
+
+                const blob = await response.blob();
+                blobUrl = window.URL.createObjectURL(blob);
+                
+                statusCard.style.display = 'block';
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                processBtn.style.pointerEvents = 'auto';
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        };
+
+        document.getElementById('download-btn').onclick = () => {
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = `Risk_Audit_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        };
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+    </script>
+</body>
+</html>
