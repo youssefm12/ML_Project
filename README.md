@@ -84,7 +84,33 @@ Make predictions on new data.
 python src/predict.py
 ```
 
-### 4. Web Application
+### 4. Exploration & Profiling
+
+You have three ways to explore the data:
+
+**Option 1: Quick View (Recommended)**
+Open the generated HTML report for an instant overview of data quality, missing values, and distributions.
+- Go to `reports/data_quality_report.html`
+- Right-click -> "Open in Default Browser" or "Show Preview"
+
+**Option 2: Interactive Notebook (VS Code)**
+Run the deep-dive analysis interactively.
+1. Open `notebooks/01_initial_exploration.ipynb` in VS Code.
+2. Select the kernel: `.venv (Python 3.9.x)`.
+3. Click "Run All" or execute cells individually.
+
+**Option 3: Automated Profiling (Advanced)**
+Generate a full profiling report using `ydata-profiling`.
+```bash
+# Ensure ydata-profiling is installed
+pip install -r requirements-dev.txt
+
+# Run generation script (calls generate_profiling_report)
+python -c "from src.utils import load_raw_data, generate_profiling_report; df = load_raw_data('data/raw/RetailCustomers.csv'); generate_profiling_report(df)"
+```
+This will create `reports/profile_report.html` with correlation heatmaps and detailed feature analysis.
+
+### 5. Web Application
 Launch the Flask dashboard.
 ```bash
 python app/main.py
