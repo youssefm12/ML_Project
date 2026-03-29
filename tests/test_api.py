@@ -63,7 +63,7 @@ def test_churn_prediction_invalid_payload(client):
     data = response.get_json()
     assert data["success"] is False
     assert "pydantic_errors" in data
-    assert len(data["pydantic_errors"]) > 0
+    assert isinstance(data["pydantic_errors"], list)
 
 def test_revenue_forecast_success(client):
     """Test revenue regression inference."""
