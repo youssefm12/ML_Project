@@ -5,6 +5,8 @@
 
 This repository contains a full-stack Machine Learning application designed to analyze and predict customer behavior for a large-scale retail gift e-commerce. The project features a hardened pipeline, modular API architecture, and a real-time analytical dashboard.
 
+- **Technical Report**: [Download Full Project Report (PDF)](./reports/rapport_ml_retail.pdf)
+
 ---
 
 ## 🚀 Executive Results Summary (Production Metrics)
