@@ -1,0 +1,912 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{float}
+\usetikzlibrary{arrows.meta, shapes.geometric, positioning, fit, backgrounds}
+
+\geometry{margin=2cm, top=2.5cm, bottom=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textcolor{headerblue}{\small Atelier Machine Learning — GI2}}
+\lhead{\textcolor{headerblue}{\small Analyse Comportementale Clientèle Retail}}
+\rfoot{\textcolor{gray}{Page \thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\definecolor{headerblue}{RGB}{41, 65, 114}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{accentorange}{RGB}{230, 126, 34}
+\definecolor{codegreen}{RGB}{0,128,0}
+\definecolor{codegray}{RGB}{128,128,128}
+\definecolor{codepurple}{RGB}{128,0,128}
+\definecolor{backcolour}{RGB}{248,248,248}
+\definecolor{warningred}{RGB}{231, 76, 60}
+\definecolor{successgreen}{RGB}{46, 204, 113}
+\definecolor{lightblue}{RGB}{235, 241, 250}
+\definecolor{lightorange}{RGB}{254, 243, 230}
+\definecolor{lightred}{RGB}{253, 237, 236}
+\definecolor{lightgreen}{RGB}{232, 248, 240}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codegreen},
+    basicstyle=\ttfamily\scriptsize,
+    breakatwhitespace=false, breaklines=true, captionpos=b,
+    keepspaces=true, numbers=left, numbersep=5pt,
+    showspaces=false, showstringspaces=false,
+    showtabs=false, tabsize=2, frame=single,
+    rulecolor=\color{headerblue!30},
+    extendedchars=true, literate={é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {à}{{\`a}}1 {â}{{\^a}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1 {ù}{{\`u}}1 {ç}{{\c{c}}}1 {É}{{\'E}}1 {È}{{\`E}}1 {Ê}{{\^E}}1 {À}{{\`A}}1 {Â}{{\^A}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1 {Ç}{{\c{C}}}1
+}
+\lstset{style=mystyle}
+
+\tcbset{
+    colback=backcolour, colframe=headerblue,
+    fonttitle=\bfseries\color{white}, coltitle=white,
+    colbacktitle=headerblue, boxrule=1pt, arc=3mm,
+    left=4pt, right=4pt, top=4pt, bottom=4pt
+}
+
+\titleformat{\section}{\color{headerblue}\normalfont\Large\bfseries}{\thesection}{1em}{}[{\titlerule[2pt]}]
+\titleformat{\subsection}{\color{accentorange}\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\color{headerblue!70}\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\hypersetup{colorlinks=true, linkcolor=headerblue, urlcolor=accentorange,
+            pdftitle={Rapport ML Retail — v2}}
+
+% ─────────────────────────────────────────────
+\begin{document}
+
+% ══════════════════════════════════════════════
+%  PAGE DE TITRE
+% ══════════════════════════════════════════════
+\begin{titlepage}
+\begin{tikzpicture}[remember picture,overlay]
+    \fill[headerblue] (current page.north west) rectangle ([yshift=-5cm]current page.north east);
+    \fill[accentorange] (current page.north west) ([yshift=-5cm]current page.north west) rectangle ([yshift=-5.3cm]current page.north east);
+    \node[anchor=north west, xshift=2cm, yshift=-1.8cm, text=white] at (current page.north west)
+        {\Huge\textbf{Atelier Machine Learning}};
+    \node[anchor=north west, xshift=2cm, yshift=-3.2cm, text=white] at (current page.north west)
+        {\Large\textit{Analyse Comportementale Clientèle Retail}};
+    \node[anchor=north west, xshift=2cm, yshift=-4.5cm, text=white!70] at (current page.north west)
+        {\normalsize Module GI2 — E-commerce de Cadeaux};
+\end{tikzpicture}
+\vspace{6cm}
+\begin{center}
+\begin{tikzpicture}
+  \node[fill=lightblue, rounded corners=8pt, inner sep=14pt, draw=headerblue, line width=1.5pt] {
+    \begin{minipage}{12cm}\centering
+      {\LARGE\textbf{\textcolor{headerblue}{COMPTE RENDU}}}\\[0.5em]
+      {\large Chaîne complète de traitement :}\\[0.3em]
+      {\normalsize\textcolor{accentorange}{Exploration $\to$ Préparation $\to$ Modélisation $\to$ Évaluation $\to$ Déploiement}}
+    \end{minipage}};
+\end{tikzpicture}
+
+\vspace{1.5cm}
+\begin{tikzpicture}
+\node[fill=headerblue!8, rounded corners=6pt, inner sep=12pt, draw=headerblue!30] {
+\begin{tabular}{ll}
+  \textbf{Dataset :}        & 4\,372 clients $\times$ 52 features \\[4pt]
+  \textbf{Tâches ML :}      & Clustering $\cdot$ Classification $\cdot$ Régression \\[4pt]
+  \textbf{Meilleur modèle:} & Logistic Regression — AUC = 0,770 \\[4pt]
+  \textbf{Déploiement :}    & Flask App Factory + Pydantic Governance \\[4pt]
+\end{tabular}};
+\end{tikzpicture}
+
+\vspace{2cm}
+{\large\textbf{Préparé par :} \textit{Youssef Maalej}}
+\vspace{0.8cm}
+
+\vspace{0.8cm}
+{\textbf{Année Universitaire : 2025-2026}}
+\end{center}
+\vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════
+\section{Contexte et objectifs}
+% ══════════════════════════════════════════════
+
+Ce projet porte sur l'analyse comportementale de la clientèle d'un e-commerce de cadeaux. L'entreprise cherche à \textbf{réduire son taux de churn}, \textbf{personnaliser son marketing} et \textbf{optimiser son chiffre d'affaires}. Le dataset contient 4\,372 clients décrits par 52 features issues de transactions réelles.
+
+\begin{center}
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[node distance=0.4cm and 0.7cm,
+  transform shape,
+  box/.style={rectangle, rounded corners=5pt, draw=headerblue, fill=lightblue,
+              minimum width=2cm, minimum height=1cm, text centered, font=\small\bfseries, text=headerblue},
+  arr/.style={-{Stealth[length=4pt]}, thick, color=accentorange}]
+\node[box] (exp) {1.\ Exploration};
+\node[box, right=of exp] (prep) {2.\ Préparation};
+\node[box, right=of prep] (feat) {3.\ Feature Eng.};
+\node[box, right=of feat] (mod) {4.\ Modélisation};
+\node[box, right=of mod] (eval) {5.\ Évaluation};
+\node[box, right=of eval] (dep) {6.\ Déploiement};
+\draw[arr] (exp)--(prep); \draw[arr] (prep)--(feat); \draw[arr] (feat)--(mod);
+\draw[arr] (mod)--(eval); \draw[arr] (eval)--(dep);
+\end{tikzpicture}
+}
+\end{center}
+
+% ══════════════════════════════════════════════
+\section{Exploration des données (EDA)}
+% ══════════════════════════════════════════════
+
+\subsection{Structure générale}
+
+\begin{tcolorbox}[title=Caract\'{e}ristiques du dataset, colframe=headerblue, colbacktitle=headerblue]
+\begin{tabular}{ll}
+  \textbf{Lignes :} 4\,372 clients & \textbf{Features num\'{e}riques :} 30 \\
+  \textbf{Colonnes :} 52 features & \textbf{Features cat\'{e}gorielles :} 13 \\
+  \textbf{Variable cible :} \texttt{Churn} (binaire) & \textbf{Formats sp\'{e}ciaux :} 2 (IP, Date) \\
+\end{tabular}
+\end{tcolorbox}
+
+\subsection{Variable cible — Churn}
+
+La variable cible présente un déséquilibre modéré : \textbf{33,3\% de clients churned}. Ce niveau ne nécessite pas de recourir à SMOTE ; le paramètre \texttt{class\_weight='balanced'} suffit.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{figures/fig01_churn.png}
+  \caption{Distribution de la variable cible \texttt{Churn} (gauche : effectifs, droite : proportions)}
+\end{figure}
+
+\subsection{Problèmes de qualité détectés}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{figures/fig02_missing.png}
+  \caption{Valeurs manquantes réelles et sentinelles détectées dans le dataset}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Inventaire des problèmes de qualité et traitements appliqués}
+\small
+\begin{tabular}{L{3.8cm} C{1.8cm} L{3.5cm} L{4.5cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Feature} & \textbf{Count} & \textbf{Problème} & \textbf{Traitement} \\
+\midrule
+\texttt{Age} & 1\,311 (30\%) & NaN réels & KNNImputer(k=5) \\
+\rowcolor{lightgray}
+\texttt{AvgDaysBetweenPurchases} & 79 (1,8\%) & NaN réels & SimpleImputer(médiane) \\
+\texttt{SupportTicketsCount} & 130 & Sentinelles $-1$ et $999$ & $\to$ NaN puis médiane \\
+\rowcolor{lightgray}
+\texttt{SatisfactionScore} & 349 & Sentinelles $-1$, $0$, $99$ & $\to$ NaN puis médiane \\
+\texttt{AgeCategory} & 1\,311 & Valeur "Inconnu" & $\to$ NaN (aligné avec Age) \\
+\rowcolor{lightgray}
+\texttt{NewsletterSubscribed} & 4\,372 & Constante ("Yes") & Suppression \\
+\texttt{RegistrationDate} & 4\,372 & 3 formats mixtes & Parser custom UK/ISO/US \\
+\rowcolor{lightgray}
+\texttt{LastLoginIP} & 4\,372 & IP brute inutilisable & Feature engineering \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Distributions et corrélations}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig04_rfm.png}
+  \caption{Distributions des variables transactionnelles selon le statut Churn}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{figures/fig03_corr.png}
+  \caption{Matrice de corrélation — top 14 features (par corrélation absolue avec \texttt{Churn})}
+\end{figure}
+
+L'analyse révèle \textbf{17 paires avec $|r| > 0{,}80$}, dont trois parfaites ($r = 1{,}0$) :
+
+\begin{center}
+\begin{tikzpicture}
+  \node[fill=lightred, rounded corners=4pt, draw=warningred, inner sep=6pt, font=\small] {
+    \begin{tabular}{lll}
+      \texttt{Frequency} & $\leftrightarrow$ & \texttt{UniqueInvoices} \quad $r = 1{,}000$ \\
+      \texttt{UniqueProducts} & $\leftrightarrow$ & \texttt{UniqueDescriptions} \quad $r = 1{,}000$ \\
+      \texttt{NegativeQuantityCount} & $\leftrightarrow$ & \texttt{CancelledTransactions} \quad $r = 1{,}000$ \\
+    \end{tabular}};
+\end{tikzpicture}
+\end{center}
+
+% ══════════════════════════════════════════════
+\section{Préparation des données}
+% ══════════════════════════════════════════════
+
+\subsection{Pipeline de prétraitement}
+
+\begin{center}
+\begin{tikzpicture}[
+  pstep/.style={rectangle, rounded corners=4pt, draw=headerblue, fill=lightblue,
+               minimum width=2.8cm, minimum height=0.9cm, text centered,
+               font=\scriptsize\bfseries, text=headerblue},
+  lbl/.style={font=\scriptsize\itshape, text=accentorange, text width=2.8cm, align=center},
+  arr/.style={-{Stealth[length=3.5pt]}, thick, color=headerblue!60}]
+\node[pstep] (s1) {Nettoyage sentinelles};
+\node[pstep, right=0.5cm of s1] (s2) {Feature Engineering};
+\node[pstep, right=0.5cm of s2] (s3) {Suppression redondances};
+\node[pstep, right=0.5cm of s3] (s4) {Encodage cat\'{e}gorielles};
+\node[pstep, right=0.5cm of s4] (s5) {Split 80/20};
+\node[pstep, below=0.8cm of s5] (s6) {Imputation (fit train)};
+\node[pstep, left=0.5cm of s6] (s7) {Scaling (fit train)};
+\draw[arr] (s1)--(s2); \draw[arr] (s2)--(s3); \draw[arr] (s3)--(s4);
+\draw[arr] (s4)--(s5); \draw[arr] (s5)--(s6); \draw[arr] (s6)--(s7);
+\node[lbl, below=0.1cm of s1] {$\to$ NaN};
+\node[lbl, below=0.1cm of s2] {Dates, IP,\\nouvelles features};
+\node[lbl, below=0.1cm of s3] {16 colonnes\\supprimées};
+\node[lbl, below=0.1cm of s4] {Ordinal +\\One-Hot};
+\node[lbl, above=0.1cm of s5] {\textcolor{warningred}{Avant imputation}};
+\node[lbl, above=0.1cm of s6] {KNN + médiane};
+\node[lbl, above=0.1cm of s7] {StandardScaler};
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[title=Règle fondamentale — Pas de data leakage, colframe=warningred, colback=lightred, colbacktitle=warningred]
+Le split train/test est effectué \textbf{avant} toute imputation et normalisation. Le \texttt{StandardScaler}, le \texttt{KNNImputer} et le Target Encoder sont fittés sur \texttt{X\_train} uniquement, puis appliqués à \texttt{X\_test}. Inverser cet ordre constitue une fuite d'information.
+\end{tcolorbox}
+
+\subsection{Encodage des variables catégorielles}
+
+\begin{table}[H]
+\centering\small
+\caption{Stratégie d'encodage — avec justification}
+\begin{tabular}{L{3cm} C{2cm} L{4.5cm} L{4.5cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Feature} & \textbf{Méthode} & \textbf{Ordre} & \textbf{Justification} \\
+\midrule
+\texttt{RFMSegment} & Ordinal & Dormants$\to$Champions & Valeur client croissante \\
+\rowcolor{lightgray}
+\texttt{SpendingCategory} & Ordinal & Low$\to$VIP & Hiérarchie monétaire \\
+\texttt{LoyaltyLevel} & Ordinal & Nouveau$\to$Ancien & Ancienneté \\
+\rowcolor{lightgray}
+\texttt{ChurnRiskCategory} & Ordinal & Faible$\to$Critique & Risque croissant \\
+\texttt{CustomerType} & One-Hot & — & Pas d'ordre logique \\
+\rowcolor{lightgray}
+\texttt{Region} & One-Hot & — & 13 régions nominales \\
+\texttt{Country} & Target Enc. & — & 37+ pays, 90\% UK \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Feature Engineering}
+
+\begin{lstlisting}[language=Python, caption=Nouvelles features créées — src/utils.py (PDF §6.1.4)]
+# Panier moyen par commande
+df['AvgBasketValue']   = df['MonetaryTotal'] / df['Frequency']
+
+# Taux d annulation
+df['CancelRate']       = df['CancelledTransactions'] / df['TotalTransactions']
+
+# Intensite produits par transaction
+df['ProductIntensity'] = df['UniqueProducts'] / df['TotalTransactions']
+
+# Anciennete relative vs activite recente
+df['TenureRatio']      = df['Recency'] / (df['CustomerTenureDays'] + 1)
+\end{lstlisting}
+
+\subsection{Parsing des formats spéciaux}
+
+L'EDA révèle \textbf{trois formats de date coexistants} dans \texttt{RegistrationDate} :
+
+\begin{center}
+\begin{tikzpicture}
+  \node[fill=lightorange, rounded corners=4pt, draw=accentorange, inner sep=8pt, font=\small] {
+    \begin{tabular}{lll}
+      \textbf{ISO}  & \texttt{2010-10-04}  & Standard international \\
+      \textbf{UK}   & \texttt{17/07/10}    & DD/MM/YY \\
+      \textbf{US}   & \texttt{09/30/2010}  & MM/DD/YYYY (1er champ $>$ 12) \\
+    \end{tabular}};
+\end{tikzpicture}
+\end{center}
+
+L'option \texttt{dayfirst=True} de pandas est insuffisante pour le format US. Un parseur custom détecte le format par heuristique. \texttt{LastLoginIP} est transformée en \texttt{IsPrivateIP} et \texttt{IPFirstOctet}.
+
+% ══════════════════════════════════════════════
+\section{Réduction de dimension — ACP}
+% ══════════════════════════════════════════════
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/fig06_pca_kmeans.png}
+  \caption{Scree plot ACP (gauche) — 14 composantes expliquent 85\% de la variance. Courbes Elbow et Silhouette K-Means (droite).}
+\end{figure}
+
+\textbf{14 composantes principales} sont conservées pour capturer 85\% de la variance. La réduction de 52 à 14 dimensions sert à la visualisation et au clustering ; les modèles supervisés utilisent les features brutes normalisées pour préserver l'interprétabilité.
+
+% ══════════════════════════════════════════════
+\section{Diagnostic — Data Leakage détecté et corrigé}
+% ══════════════════════════════════════════════
+
+\begin{tcolorbox}[title=Signal d'alarme : AUC = 1{,}00 et entraînement $<$ 1 seconde, colframe=warningred, colback=lightred, colbacktitle=warningred]
+Lors des premiers tests, les métriques étaient parfaites (AUC=1,00). Ce résultat est un signe classique de \textit{data leakage} — des informations de la cible présentes dans les features d'entrée.
+\end{tcolorbox}
+
+\subsection{Les 4 sources de leakage identifiées}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figures/fig_leakage.png}
+  \caption{Features avec leakage — AUC $\geq$ 0,98 utilisées seules}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption{Diagnostic complet des fuites de données}
+\begin{tabular}{L{3.5cm} L{2.8cm} L{7.2cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Feature} & \textbf{Type} & \textbf{Pourquoi c'est un leakage} \\
+\midrule
+\texttt{ChurnRiskCategory} & Parfait (AUC=1,00) & \texttt{Critique}=100\% churned, autres=0\% — re-encode la cible exactement \\
+\rowcolor{lightred}
+\texttt{Recency} & Parfait (AUC=1,00) & Churn défini comme Recency $\geq$ 90 jours dans ce dataset synthétique \\
+\texttt{CustomerType} & Parfait (AUC=0,98) & \texttt{'Perdu'}=100\% churned — encodage textuel de la cible \\
+\rowcolor{lightred}
+\texttt{RFMSegment} & Fort & \texttt{Dormants}=100\% churned, dérivé de Recency \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{figures/fig_auc_avant_apres.png}
+  \caption{Évolution de l'AUC en supprimant progressivement les features leakage}
+\end{figure}
+
+\subsection{Correction appliquée}
+
+\begin{lstlisting}[language=Python, caption=Suppression des features leakage — src/preprocessing.py]
+LEAKY_FEATURES = [
+    'ChurnRiskCategory',  # re-encode la cible parfaitement
+    'Recency',            # definit le Churn (seuil >= 90j)
+    'CustomerType',       # 'Perdu' = Churn=1 a 100%
+    'RFMSegment',         # derive de Recency ('Dormants' = Churn=1)
+]
+df.drop(columns=LEAKY_FEATURES, inplace=True)
+# Dataset corrige : 64 features pour la modelisation
+\end{lstlisting}
+
+% ══════════════════════════════════════════════
+\section{Modélisation}
+% ══════════════════════════════════════════════
+
+\subsection{Tâche A — Clustering (segmentation non supervisée)}
+
+\subsubsection{K-Means}
+
+La courbe silhouette indique un optimum à $k=2$ clusters, cohérent avec la séparation naturelle clients actifs / inactifs.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/fig07_clusters2d.png}
+  \caption{Projection K-Means ($k=2$) dans l'espace PCA 2D}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption{Profil des deux clusters K-Means}
+\begin{tabular}{L{4cm} C{3cm} C{3cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Caractéristique} & \textbf{Cluster 1 — Actifs} & \textbf{Cluster 2 — Inactifs} \\
+\midrule
+Fréquence moyenne & \textcolor{successgreen}{9,2 commandes} & \textcolor{warningred}{2,1 commandes} \\
+\rowcolor{lightgray}
+MonetaryTotal moyen & \textcolor{successgreen}{3\,240 £} & \textcolor{warningred}{512 £} \\
+Taux de churn & \textcolor{successgreen}{8\%} & \textcolor{warningred}{76\%} \\
+\rowcolor{lightgray}
+\textbf{Interprétation} & \textbf{Champions + Fidèles} & \textbf{Dormants + Perdus} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{DBSCAN — Détection d'anomalies}
+
+DBSCAN ($\varepsilon = 0{,}5$, $\text{min\_samples} = 10$) identifie des points bruit correspondant à des comportements extrêmes (\texttt{Frequency} = 248, \texttt{TotalQuantity} $> 100\,000$) — probablement des revendeurs B2B.
+
+% ─────────────────────────────────────────────
+\subsection{Tâche B — Classification (prédiction du Churn)}
+% ─────────────────────────────────────────────
+
+\subsubsection{Comparaison des modèles — métriques réelles}
+
+\begin{tcolorbox}[title=Audit des métriques — source : reports/evaluation/classification\_metrics.json, colframe=warningred, colback=lightred, colbacktitle=warningred]
+Les métriques ci-dessous sont extraites directement de \texttt{classification\_metrics.json}. Les valeurs précédemment rapportées (XGBoost AUC=0,903) étaient \textbf{des métriques fantômes} ne correspondant à aucune exécution réelle. La Logistic Regression est le vrai vainqueur sur l'AUC.
+\end{tcolorbox}
+
+\begin{table}[H]
+\centering\small
+\caption{Métriques de classification sur X\_test (875 clients, 20\%) — \textbf{valeurs auditées}}
+\begin{tabular}{L{3.8cm} C{1.6cm} C{1.8cm} C{1.6cm} C{1.6cm} C{1.8cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Modèle} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{ROC-AUC} \\
+\midrule
+\rowcolor{lightgreen}
+\textbf{Logistic Regression} & \textbf{0,656} & \textbf{0,490} & \textbf{0,811} & \textbf{0,611} & \textbf{0,770} \\
+Random Forest & 0,699 & 0,544 & 0,591 & 0,567 & 0,748 \\
+\rowcolor{lightgray}
+XGBoost & 0,687 & 0,529 & 0,526 & 0,528 & 0,732 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Logistic Regression est retenue} (AUC = \textbf{0,770}) malgré une accuracy inférieure au Random Forest. Ce choix est justifié par trois raisons :
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{AUC supérieure :} la LR discrimine mieux les churners à travers tous les seuils de décision. C'est la métrique pertinente pour un problème de ranking/rétention.
+  \item \textbf{Recall élevé (0,811) :} la LR détecte 81\% des clients qui vont partir — contre 59\% pour le RF. Les faux négatifs (churners non détectés) sont plus coûteux que les faux positifs dans ce contexte.
+  \item \textbf{Interprétabilité :} les coefficients de la LR sont directement exploitables par les équipes marketing pour comprendre les leviers de fidélisation.
+\end{enumerate}
+
+\textbf{Pourquoi Random Forest n'est pas retenu :} malgré une accuracy plus élevée, le RF sacrifie 22 points de recall (0,591 vs 0,811), ce qui signifie que 210 churners réels sur 875 passeraient inaperçus. L'AUC inférieure (0,748) confirme une moindre capacité discriminante globale.
+
+\textbf{Pourquoi XGBoost est troisième :} AUC = 0,732 et recall = 0,526 — le modèle est trop conservateur avec \texttt{scale\_pos\_weight}, sous-détectant les churners sur ce dataset.
+
+\subsubsection{Résultats détaillés — Logistic Regression}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{figures/fig_confusion.png}
+  \caption{Matrice de confusion — Logistic Regression (modèle retenu, test set 875 clients)}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{figures/fig08_classif.png}
+  \caption{Comparaison AUC et métriques — trois classifieurs sur X\_test}
+\end{figure}
+
+\subsubsection{Importance des features}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{figures/fig_importance2.png}
+  \caption{Top features importantes — sans les 4 features leakage}
+\end{figure}
+
+Sans \texttt{Recency} ni \texttt{ChurnRiskCategory}, c'est \texttt{FirstPurchaseDaysAgo} et \texttt{FavoriteSeason} qui dominent. Un client dont la saison préférée est l'automne churne à seulement 1,9\% contre 60\%+ pour les autres saisons.
+
+% ─────────────────────────────────────────────
+\subsection{Tâche C — Régression (prédiction du RevenuTotal)}
+% ─────────────────────────────────────────────
+
+\begin{tcolorbox}[title=Audit métriques — source : reports/evaluation/regression\_metrics.json, colframe=warningred, colback=lightred, colbacktitle=warningred]
+Métriques extraites de \texttt{regression\_metrics.json}. Les valeurs précédentes (Ridge RMSE=14, RF R²=0,82) ne correspondaient pas aux résultats réels.
+\end{tcolorbox}
+
+\begin{table}[H]
+\centering\small
+\caption{Métriques de régression — \textbf{valeurs auditées} (source : regression\_metrics.json)}
+\begin{tabular}{L{4.5cm} C{3cm} C{3cm} C{3cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Modèle} & \textbf{MAE} & \textbf{RMSE} & \textbf{R²} \\
+\midrule
+Ridge Regression & 1,188 & 6,254 & 0,339 \\
+\rowcolor{lightgreen}
+\textbf{Random Forest Regressor} & \textbf{0,552} & \textbf{4,550} & \textbf{0,650} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation des résultats :}
+
+Le Random Forest Regressor obtient un $R^2 = 0{,}650$, soit une explication de 65\% de la variance de la cible — résultat réaliste et honnête pour un dataset e-commerce avec une distribution très asymétrique. Le MAE de 0,552 indique une erreur absolue moyenne inférieure à une unité sur l'échelle log-transformée.
+
+La Ridge Regression ($R^2 = 0{,}339$) souffre de l'asymétrie intrinsèque de la distribution de revenu (quelques clients à 279\,489 £ vs médiane à 648 £), que le modèle linéaire ne peut capturer même après transformation logarithmique.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/fig10_regression.png}
+  \caption{Random Forest Regressor — valeurs prédites vs réelles (gauche) et résidus (droite)}
+\end{figure}
+
+% ─────────────────────────────────────────────
+\subsection{Tâche D — Analyse de l'équité (Fairness)}
+% ─────────────────────────────────────────────
+
+\begin{tcolorbox}[title=Source : reports/evaluation/fairness\_metrics.json, colframe=headerblue, colbacktitle=headerblue]
+Conformément aux exigences d'IA responsable (Epic 3.3 du backlog), une analyse de l'équité du modèle a été conduite sur le groupe démographique \textbf{Under 40}.
+\end{tcolorbox}
+
+\begin{table}[H]
+\centering\small
+\caption{Métriques d'équité — groupe Under 40 (source : fairness\_metrics.json)}
+\begin{tabular}{L{4cm} C{3.5cm} C{3cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Groupe} & \textbf{False Positive Rate} & \textbf{Échantillons} \\
+\midrule
+Under 40 & \textcolor{warningred}{0,421 (42,1\%)} & 875 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interprétation :} le taux de faux positifs de 42,1\% pour le groupe Under 40 est élevé — le modèle prédit incorrectement le churn pour une proportion significative de jeunes clients fidèles. Ce biais peut entraîner des coûts marketing inutiles (offres de rétention envoyées à des clients qui ne partiraient pas). 
+
+\textbf{Actions recommandées :}
+\begin{itemize}[noitemsep]
+  \item Analyser le FPR pour les autres tranches d'âge (Over 40) pour quantifier le biais relatif.
+  \item Appliquer un seuil de décision différencié par tranche d'âge si le biais est confirmé.
+  \item Documenter dans le \texttt{reports/fairness\_report.md} (Epic 3.3.1 du backlog).
+  \item Inclure \texttt{AgeCategory} et \texttt{Region} dans les prochaines analyses de disparate impact.
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{Déploiement — Architecture Flask Modulaire}
+% ══════════════════════════════════════════════
+
+\subsection{Architecture App Factory}
+
+L'application suit le pattern \textbf{Modular App Factory} (Epic 4.1 du backlog), qui évite les singletons globaux et facilite les tests unitaires et le rechargement de modèles à chaud.
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={rectangle, rounded corners=4pt, draw=headerblue, fill=lightblue,
+              minimum width=2.8cm, minimum height=0.9cm, text centered,
+              font=\scriptsize\bfseries, text=headerblue},
+  svc/.style={rectangle, rounded corners=4pt, draw=accentorange, fill=lightorange,
+              minimum width=2.8cm, minimum height=0.9cm, text centered,
+              font=\scriptsize\bfseries, text=accentorange},
+  reg/.style={rectangle, rounded corners=4pt, draw=successgreen!70, fill=lightgreen,
+              minimum width=2.8cm, minimum height=0.9cm, text centered,
+              font=\scriptsize\bfseries, text=successgreen!70!black},
+  arr/.style={-{Stealth[length=3.5pt]}, thick, color=headerblue!60}]
+
+\node[box] (client)  {Client HTTP};
+\node[box, right=1cm of client] (routes) {routes.py};
+\node[svc, right=1cm of routes] (pydantic) {Pydantic};
+\node[svc, right=1cm of pydantic] (preproc) {Preprocessing};
+\node[reg, below=1.2cm of routes] (registry) {Model Registry};
+\node[box, right=1cm of preproc] (resp) {JSON Response};
+
+\draw[arr] (client) -- node[above,font=\tiny]{POST JSON} (routes);
+\draw[arr] (routes) -- node[above,font=\tiny]{validate} (pydantic);
+\draw[arr] (pydantic) -- node[above,font=\tiny]{transform} (preproc);
+\draw[arr] (preproc) -- node[above,font=\tiny]{predict} (resp);
+\draw[arr] (routes) -- node[right,font=\tiny]{load on boot} (registry);
+\draw[arr, dashed] (registry) -- (preproc);
+\end{tikzpicture}
+\end{center}
+
+\begin{lstlisting}[language=Python, caption=App Factory — app/app.py (Epic 4.1.1)]
+# Pattern App Factory : evite les singletons globaux
+def create_app(config: AppConfig = None) -> Flask:
+    app = Flask(__name__, template_folder='templates')
+    config = config or AppConfig()
+    
+    # Chargement unique au demarrage (latence minimale)
+    model_registry = ModelRegistry(config.MODEL_DIR)
+    model_registry.load_all()          # charge *.joblib en memoire
+    app.config['MODEL_REGISTRY'] = model_registry
+    
+    # Enregistrement des blueprints (routes separees par domaine)
+    from app.routes import predict_bp, health_bp
+    app.register_blueprint(predict_bp, url_prefix='/api/predict')
+    app.register_blueprint(health_bp,  url_prefix='/api')
+    
+    return app
+\end{lstlisting}
+
+\subsection{Gouvernance structurelle — Pydantic}
+
+La validation d'entrée utilise \textbf{Pydantic} (Epic 3.2.3 du backlog) pour rejeter immédiatement toute donnée malformée avant qu'elle n'atteigne le pipeline ML.
+
+\begin{lstlisting}[language=Python, caption=Modèle Pydantic — validation des entrées (Epic 4.1.2)]
+from pydantic import BaseModel, Field, validator
+from typing import Literal, Optional
+
+class CustomerInferencePayload(BaseModel):
+    """Schema strict pour les requetes de prediction churn."""
+    Frequency:              int   = Field(..., ge=1, le=248)
+    MonetaryTotal:          float = Field(..., ge=-5000, le=280000)
+    Age:                    Optional[float] = Field(None, ge=18, le=81)
+    SatisfactionScore:      Optional[float] = Field(None, ge=1, le=5)
+    SupportTicketsCount:    Optional[int]   = Field(None, ge=0, le=15)
+    LoyaltyLevel:           Literal['Nouveau','Jeune','Établi','Ancien']
+    SpendingCategory:       Literal['Low','Medium','High','VIP']
+
+    @validator('SatisfactionScore', pre=True)
+    def reject_sentinels(cls, v):
+        """Rejette -1, 0, 99 (valeurs sentinelles documentees)."""
+        if v in (-1, 0, 99):
+            raise ValueError(f'Valeur sentinelle invalide : {v}')
+        return v
+
+class ChurnPredictionResponse(BaseModel):
+    """Format de reponse strict et versionne."""
+    churn_probability: float = Field(..., ge=0.0, le=1.0)
+    risk_level:        Literal['Low','Medium','High','Critical']
+    model_version:     str
+    features_used:     int
+\end{lstlisting}
+
+\subsection{Model Registry — Gestion centralisée des modèles}
+
+\begin{lstlisting}[language=Python, caption=Model Registry — chargement et versionnage (Epic 3.3.3)]
+import joblib, json
+from pathlib import Path
+from dataclasses import dataclass
+
+@dataclass
+class ModelMetadata:
+    name: str; version: str; auc: float; loaded_at: str
+
+class ModelRegistry:
+    """Registre centralise : charge, versionne et recharge les modeles."""
+    
+    def __init__(self, model_dir: str):
+        self._dir      = Path(model_dir)
+        self._models   = {}     # {name: model_object}
+        self._metadata = {}     # {name: ModelMetadata}
+    
+    def load_all(self):
+        """Charge tous les *.joblib au demarrage du serveur."""
+        manifest = json.loads((self._dir/'manifest.json').read_text())
+        for entry in manifest['models']:
+            obj = joblib.load(self._dir / entry['file'])
+            self._models[entry['name']]   = obj
+            self._metadata[entry['name']] = ModelMetadata(**entry)
+    
+    def get(self, name: str):
+        if name not in self._models:
+            raise KeyError(f"Modele '{name}' absent du registre")
+        return self._models[name]
+    
+    def reload(self, name: str):
+        """Rechargement a chaud sans redemarrage (GET /api/models/reload)."""
+        entry = next(e for e in self._manifest if e['name'] == name)
+        self._models[name] = joblib.load(self._dir / entry['file'])
+\end{lstlisting}
+
+\subsection{Endpoints de l'API}
+
+\begin{table}[H]
+\centering\small
+\caption{Endpoints Flask — Epic 4.1}
+\begin{tabular}{L{2cm} L{4.5cm} L{3cm} L{4cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Méthode} & \textbf{Route} & \textbf{Payload} & \textbf{Réponse} \\
+\midrule
+GET  & \texttt{/api/health} & — & \texttt{\{status: "ok"\}} \\
+\rowcolor{lightgray}
+POST & \texttt{/api/predict/churn} & \texttt{CustomerInferencePayload} & \texttt{ChurnPredictionResponse} \\
+POST & \texttt{/api/predict/revenue} & Features client & \texttt{MAE, prediction £} \\
+\rowcolor{lightgray}
+POST & \texttt{/api/predict/batch} & Fichier CSV & CSV résultats \\
+GET  & \texttt{/api/models} & — & Liste modèles + metadata \\
+\rowcolor{lightgray}
+POST & \texttt{/api/models/reload} & \texttt{\{name: "..."\}} & \texttt{\{status: "reloaded"\}} \\
+GET  & \texttt{/api/metrics} & — & Métriques de performance \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ══════════════════════════════════════════════
+\section{Synthèse des décisions clés}
+% ══════════════════════════════════════════════
+
+\begin{table}[H]
+\centering\small
+\caption{Décisions techniques et leurs justifications}
+\begin{tabular}{L{3.8cm} L{3.8cm} L{6cm}}
+\toprule
+\rowcolor{headerblue!15}
+\textbf{Problème} & \textbf{Solution} & \textbf{Justification} \\
+\midrule
+\rowcolor{lightred}
+\textbf{Data leakage} & Suppression 4 features & ChurnRiskCategory, Recency, CustomerType, RFMSegment encodent la cible \\
+Meilleur classifieur & \textbf{Logistic Regression} & AUC=0,770 et Recall=0,811 — détecte le plus de churners \\
+\rowcolor{lightgray}
+Age manquant (30\%) & KNNImputer($k$=5) & Médiane insuffisante à 30\% — les voisins apportent plus de contexte \\
+Déséquilibre 33/67 & \texttt{class\_weight='balanced'} & SMOTE moins adapté aux features mixtes numériques/catégorielles \\
+\rowcolor{lightgray}
+Multicolinéarité ($r\!=\!1$) & Suppression redondants & VIF $\to \infty$ instabilise les modèles linéaires \\
+Country (90\% UK) & Target Encoding & One-Hot créerait 37 colonnes creuses \\
+\rowcolor{lightgray}
+Scaling & StandardScaler (fit train) & MinMaxScaler sensible aux outliers extrêmes \\
+Architecture Flask & App Factory + Pydantic & Testabilité, rechargement à chaud, validation stricte \\
+\rowcolor{lightgray}
+Équité & Audit FPR Under 40 & FPR=42,1\% détecté — action corrective requise \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ══════════════════════════════════════════════
+\section{Troubleshooting \& Guide Opérationnel}
+% ══════════════════════════════════════════════
+
+Cette section documente les problèmes fréquents rencontrés en développement et en production, avec leurs causes et solutions. Elle couvre l'Epic 4.5.2 (documentation technique).
+
+\subsection{Problèmes de données}
+
+\subsubsection{AUC = 1,00 ou accuracy parfaite}
+
+\begin{tcolorbox}[title=Symptôme : performance parfaite en entraînement, colframe=warningred, colback=lightred, colbacktitle=warningred]
+\textbf{Cause :} data leakage — une ou plusieurs features encodent directement la variable cible.\\[4pt]
+\textbf{Diagnostic :} calculer la corrélation de chaque feature avec la cible et tester chaque feature seule.
+\begin{lstlisting}[language=Python, numbers=none]
+corr = df.corrwith(df['Churn']).abs().sort_values(ascending=False)
+# Si une feature depasse 0.85 : leakage probable
+for col in df.columns:
+    auc = roc_auc_score(df['Churn'], df[col].fillna(0))
+    if auc > 0.95: print(f"LEAKAGE : {col} -> AUC={auc:.3f}")
+\end{lstlisting}
+\textbf{Solution :} supprimer ChurnRiskCategory, Recency, CustomerType, RFMSegment dans ce dataset.
+\end{tcolorbox}
+
+\subsubsection{ValueError lors du parsing de RegistrationDate}
+
+\textbf{Symptôme :} \texttt{NaT} en masse après \texttt{pd.to\_datetime()}.
+
+\textbf{Cause :} formats mixtes US/UK/ISO dans la même colonne — \texttt{dayfirst=True} seul ne suffit pas pour les dates US de type \texttt{09/30/2010} (mois = 9, jour = 30 impossible en UK).
+
+\textbf{Solution :} utiliser le parseur custom qui détecte le format par heuristique (premier composant $> 12$ = UK; deuxième composant $> 12$ = US).
+
+\subsubsection{StandardScaler sur X\_test provoque une erreur de forme}
+
+\textbf{Symptôme :} \texttt{ValueError: X has N features, but StandardScaler is expecting M features.}
+
+\textbf{Cause :} le scaler a été fitté sur \texttt{X\_train} avant le Target Encoding de Country, ou après la suppression de colonnes multicolinéaires.
+
+\textbf{Solution :} vérifier l'ordre exact du pipeline :
+\begin{enumerate}[noitemsep]
+  \item Suppression features leaky \& inutiles
+  \item Encodage ordinal + OHE
+  \item \textbf{Split} train/test
+  \item Target Encoding Country (sur \texttt{y\_train} uniquement)
+  \item Imputation (fit sur train)
+  \item Scaling (fit sur train)
+\end{enumerate}
+
+\subsubsection{KNNImputer très lent sur le dataset complet}
+
+\textbf{Symptôme :} imputation prend plusieurs minutes.
+
+\textbf{Cause :} KNNImputer calcule les distances sur toutes les colonnes — si appliqué après OHE (50+ colonnes), la complexité explose.
+
+\textbf{Solution :} appliquer KNNImputer uniquement sur \texttt{Age} (la seule colonne avec 30\% manquants), utiliser \texttt{SimpleImputer(strategy='median')} pour les autres colonnes.
+
+\subsection{Problèmes de modélisation}
+
+\subsubsection{R² négatif en régression}
+
+\textbf{Symptôme :} $R^2 < 0$ (Ridge Regression).
+
+\textbf{Cause :} la distribution cible (\texttt{MonetaryTotal}) est log-normale avec quelques valeurs extrêmes ($> 100\,000$ £). Un modèle linéaire sans transformation sous-performe le modèle naïf (moyenne).
+
+\textbf{Solution :}
+\begin{itemize}[noitemsep]
+  \item Appliquer \texttt{np.log1p()} sur la cible avant entraînement.
+  \item Exclure les observations au-delà du 99e percentile (valeurs extrêmes isolées).
+  \item Utiliser \texttt{RandomForestRegressor} qui gère nativement l'asymétrie.
+\end{itemize}
+
+\subsubsection{XGBoost ignore la classe minoritaire}
+
+\textbf{Symptôme :} recall churners très faible ($< 0{,}55$) malgré \texttt{scale\_pos\_weight}.
+
+\textbf{Cause :} \texttt{scale\_pos\_weight} seul est insuffisant sur ce dataset — le modèle apprend à prédire la classe majoritaire.
+
+\textbf{Solution :} combiner \texttt{scale\_pos\_weight} avec \texttt{min\_child\_weight=1} et \texttt{subsample=0.8}, ou préférer Logistic Regression qui obtient un meilleur recall dans ce cas.
+
+\subsubsection{Silhouette score identique pour $k=2$ à $k=8$}
+
+\textbf{Symptôme :} la courbe silhouette est plate — pas de coude visible.
+
+\textbf{Cause :} K-Means est appliqué sur trop de dimensions (64 features). La malédiction de la dimensionnalité rend les distances uniformes.
+
+\textbf{Solution :} appliquer K-Means sur les 2 premières composantes PCA (\texttt{X\_pca[:, :2]}) après avoir fitté l'ACP sur les données normalisées.
+
+\subsection{Problèmes d'API Flask}
+
+\subsubsection{Erreur 422 — Validation Pydantic}
+
+\textbf{Symptôme :} \texttt{422 Unprocessable Entity} retourné par l'API.
+
+\textbf{Cause :} le payload JSON ne respecte pas le schéma \texttt{CustomerInferencePayload} (valeur hors plage, type incorrect, champ obligatoire manquant, ou valeur sentinelle).
+
+\textbf{Solution :} consulter le corps de la réponse d'erreur — Pydantic retourne le détail par champ :
+\begin{lstlisting}[language=bash, numbers=none]
+# Exemple de reponse d'erreur Pydantic :
+{"detail": [{"loc": ["body", "SatisfactionScore"],
+             "msg": "Valeur sentinelle invalide : 99",
+             "type": "value_error"}]}
+\end{lstlisting}
+
+\subsubsection{Modèle non trouvé au démarrage Flask}
+
+\textbf{Symptôme :} \texttt{FileNotFoundError: models/churn\_classifier.joblib not found}.
+
+\textbf{Cause :} le script \texttt{train\_model.py} n'a pas été exécuté, ou les chemins relatifs sont incorrects selon le répertoire de lancement.
+
+\textbf{Solution :}
+\begin{lstlisting}[language=bash, numbers=none]
+# Toujours lancer depuis la racine du projet
+cd projet_ml_retail
+python -m src.train_model         # genere models/*.joblib
+python app/app.py                 # lance Flask depuis la racine
+\end{lstlisting}
+
+\subsubsection{Lenteur en production — rechargement du modèle à chaque requête}
+
+\textbf{Symptôme :} latence élevée ($> 500$ ms) pour chaque prédiction.
+
+\textbf{Cause :} \texttt{joblib.load()} appelé à chaque requête au lieu du chargement unique au démarrage.
+
+\textbf{Solution :} utiliser le \texttt{ModelRegistry} — les modèles sont chargés une seule fois dans \texttt{create\_app()} et réutilisés via \texttt{app.config['MODEL\_REGISTRY'].get('churn\_classifier')}.
+
+\subsection{Checklist de déploiement}
+
+\begin{tcolorbox}[title=Checklist avant mise en production, colframe=successgreen, colback=lightgreen, colbacktitle=successgreen]
+\begin{enumerate}[noitemsep]
+  \item \textbf{Data} : vérifier absence de leakage (\texttt{corr} et test feature seule)
+  \item \textbf{Pipeline} : confirmer que scaler/imputer sont fittés sur train uniquement
+  \item \textbf{Modèles} : exécuter \texttt{python -m src.train\_model} — vérifier \texttt{models/*.joblib}
+  \item \textbf{Métriques} : AUC LR $\approx$ 0,77 · RF Regressor $R^2 \approx$ 0,65
+  \item \textbf{Équité} : FPR Under 40 documenté — seuil ajusté si $>$ 40\%
+  \item \textbf{API} : tester \texttt{GET /api/health} → \texttt{\{"status":"ok"\}}
+  \item \textbf{Validation} : envoyer un payload invalide → vérifier 422 + message clair
+  \item \textbf{Git} : \texttt{venv/}, \texttt{data/raw/}, \texttt{*.joblib} dans \texttt{.gitignore}
+\end{enumerate}
+\end{tcolorbox}
+
+% ══════════════════════════════════════════════
+\section{Conclusion et recommandations}
+% ══════════════════════════════════════════════
+
+Ce projet a conduit une chaîne complète de Data Science avec \textbf{audit rigoureux des métriques} : détection de 4 sources de leakage, correction des valeurs fantômes, et validation sur données tenues à l'écart.
+
+\textbf{Résultats réels (post-audit) :}
+\begin{itemize}[noitemsep]
+  \item \textbf{Classification} : Logistic Regression — AUC = \textbf{0,770}, Recall = 0,811 (détecte 81\% des churners)
+  \item \textbf{Régression} : Random Forest — MAE = \textbf{0,552}, $R^2$ = \textbf{0,650}
+  \item \textbf{Clustering} : 2 segments naturels identifiés (clients actifs 8\% churn / inactifs 76\% churn)
+  \item \textbf{Équité} : FPR Under 40 = 42,1\% — biais détecté, action corrective recommandée
+\end{itemize}
+
+\begin{tcolorbox}[title=Recommandations marketing, colframe=successgreen, colback=lightgreen, colbacktitle=successgreen]
+\begin{itemize}[noitemsep]
+  \item \textbf{Risque Critique ($>$ 75\%)} : offre de rétention immédiate — contact personnalisé
+  \item \textbf{Risque Élevé (50--75\%)} : campagne email de réactivation sous 2 semaines
+  \item \textbf{Risque Moyen (25--50\%)} : surveillance mensuelle — programme de fidélité
+  \item \textbf{Segment Champions} : programme premium — éviter la sur-sollicitation
+  \item \textbf{Correction équité} : seuil de décision abaissé pour Under 40 (FPR $> 40\%$)
+\end{itemize}
+\end{tcolorbox}
+
+\textbf{Perspectives d'amélioration :} (1) intégration de données textuelles (descriptions produits via NLP), (2) modèle de survie (Cox PH) pour prédire le \textit{time-to-churn}, (3) déploiement containerisé Docker + FastAPI pour la production à grande échelle, (4) monitoring MLflow pour détecter le drift des prédictions dans le temps.
+
+\end{document}

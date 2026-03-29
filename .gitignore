@@ -154,19 +154,14 @@ cython_debug/
 .vscode/
 
 # Project Specific Data
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/train_test/*
-!data/train_test/.gitkeep
+
 models/*
 !models/.gitkeep
 !models/*.pkl
 !models/*.joblib
-reports/*
+
 !reports/.gitkeep
-notebooks/*
+
 !notebooks/.ipynb_checkpoints
 !notebooks/.gitkeep
 
