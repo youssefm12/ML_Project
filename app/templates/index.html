@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Intelligence | AI Tech Lead</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="gradient-blob blob-1"></div>
+    <div class="gradient-blob blob-2"></div>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>RetainAI Nexus</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Data Entry Form -->
+        <div class="glass-panel form-panel">
+            <div class="panel-header">
+                <h2>Predictive Payload</h2>
+                <p>Inject transactional telemetry to calculate risk factors in real-time.</p>
+            </div>
+            
+            <form id="inference-form">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="Frequency">Purchase Frequency</label>
+                        <input type="number" id="Frequency" name="Frequency" value="45" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="MonetaryTotal">Capital Spent ($LTV)</label>
+                        <input type="number" step="0.01" id="MonetaryTotal" name="MonetaryTotal" value="12500.50" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="TotalQuantity">Total Products</label>
+                        <input type="number" id="TotalQuantity" name="TotalQuantity" value="150" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="ReturnRatio">Return / Refund Ratio</label>
+                        <input type="number" step="0.01" id="ReturnRatio" name="ReturnRatio" value="0.05" min="0" max="1" required>
+                    </div>
+                    <!-- Statistical Aggregates Expected by Model -->
+                    <div class="input-group">
+                        <label for="UniqueInvoices">Unique Invoices</label>
+                        <input type="number" id="UniqueInvoices" name="UniqueInvoices" value="15" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="AvgProductsPerTransaction">Avg Units / Cart</label>
+                        <input type="number" step="0.01" id="AvgProductsPerTransaction" name="AvgProductsPerTransaction" value="3.5" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="Age">Customer Age (Demographic)</label>
+                        <input type="number" id="Age" name="Age" value="34" min="18" max="120">
+                    </div>
+                    <div class="input-group">
+                        <label for="SupportTicketsCount">Support Interactions</label>
+                        <input type="number" id="SupportTicketsCount" name="SupportTicketsCount" value="0" min="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="predict-btn">
+                    <span>Initiate Forecast</span>
+                    <div class="loader" id="btn-loader"></div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Telemetry Results -->
+        <div class="results-panel">
+            <div class="glass-panel metric-card">
+                <div class="metric-title">Churn Probability Score</div>
+                <div class="metric-value">
+                    <span id="churn-score">--</span>
+                    <span class="metric-sub">%</span>
+                </div>
+                <!-- Micro-animated bar graph -->
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 2rem; overflow: hidden;">
+                    <div id="churn-bar" style="width: 0%; height: 100%; background: var(--primary-accent); transition: width 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), background-color 0.5s;"></div>
+                </div>
+            </div>
+
+            <div class="glass-panel metric-card">
+                <div class="metric-title">Customer Risk Categorization</div>
+                <div class="metric-value" id="risk-category" style="font-size: 2.5rem; margin-top: 1rem;">
+                    Awaiting Telemetry
+                </div>
+            </div>
+            
+            <div class="glass-panel metric-card">
+                <div class="metric-title">Predicted Marginal Revenue (LTV Delta)</div>
+                <div class="metric-value" id="revenue-pred" style="font-size: 2.5rem; margin-top: 1rem;">
+                    $--
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast">Error processing payload.</div>
+
+    <script>
+        document.getElementById('inference-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('predict-btn');
+            const loader = document.getElementById('btn-loader');
+            const btnText = btn.querySelector('span');
+            
+            btn.style.pointerEvents = 'none';
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            
+            // Build Payload
+            const formData = new FormData(e.target);
+            const payload = {
+                Frequency: parseInt(formData.get('Frequency')),
+                MonetaryTotal: parseFloat(formData.get('MonetaryTotal')),
+                TotalQuantity: parseInt(formData.get('TotalQuantity')),
+                ReturnRatio: parseFloat(formData.get('ReturnRatio')),
+                MonetaryAvg: parseFloat(formData.get('MonetaryTotal')) / parseInt(formData.get('Frequency')),
+                MonetaryStd: 0.0, // Defaults for static inference demo
+                MonetaryMin: 0.0,
+                MonetaryMax: 0.0,
+                UniqueProducts: 5,
+                UniqueDescriptions: 5,
+                AvgProductsPerTransaction: parseFloat(formData.get('AvgProductsPerTransaction')),
+                NegativeQuantityCount: 0,
+                ZeroPriceCount: 0,
+                CancelledTransactions: 0,
+                TotalTransactions: parseInt(formData.get('Frequency')),
+                UniqueInvoices: parseInt(formData.get('UniqueInvoices')),
+                AvgLinesPerInvoice: parseFloat(formData.get('TotalQuantity')) / parseInt(formData.get('UniqueInvoices')),
+                Age: parseInt(formData.get('Age')),
+                SupportTicketsCount: parseInt(formData.get('SupportTicketsCount')),
+                SatisfactionScore: 5 // Default High Satisfaction
+            };
+
+            try {
+                const response = await fetch('/api/predict/churn', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Prediction architecture failed.');
+                }
+
+                const data = await response.json();
+                
+                // Animate Outputs
+                const churnProb = data.churn_probability * 100;
+                document.getElementById('churn-score').innerText = churnProb.toFixed(1);
+                
+                const churnBar = document.getElementById('churn-bar');
+                churnBar.style.width = `${Math.min(churnProb, 100)}%`;
+                
+                const riskCat = document.getElementById('risk-category');
+                riskCat.innerText = data.risk_level;
+                
+                if (data.risk_level === 'High Risk') {
+                    riskCat.className = 'metric-value risk-high';
+                    churnBar.style.background = 'var(--danger)';
+                } else {
+                    riskCat.className = 'metric-value risk-low';
+                    churnBar.style.background = 'var(--success)';
+                }
+                
+                // Demo Revenue output if available
+                if (data.predicted_revenue !== undefined) {
+                    document.getElementById('revenue-pred').innerText = `$${data.predicted_revenue.toFixed(2)}`;
+                }
+
+            } catch (error) {
+                const toast = document.getElementById('toast');
+                toast.innerText = error.message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 4000);
+            } finally {
+                btn.style.pointerEvents = 'auto';
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

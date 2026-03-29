@@ -324,14 +324,20 @@ def identify_redundant_features(df: pd.DataFrame, variance_threshold: float = 0.
     """Identifies columns to drop strictly based on Training data statistics."""
     dropped = []
     
-    # 1. Known constants and textual IDs
+    # 1. Known constants and textual IDs (ALWAYS DROP)
     for col in ["NewsletterSubscribed", "CustomerID", "LastLoginIP", "RegistrationDate", "RFMSegment"]:
         if col in df.columns: dropped.append(col)
             
+    # Professional-grade Whitelist: Protect critical metrics even if statistical thresholds fail
+    PROTECTED = {"MonetaryTotal", "Frequency", "Recency", "Churn", "Age", "SupportTicketsCount", "SatisfactionScore"}
+
     # 2. Low variance
     numeric_cols = df.select_dtypes(include=["float64", "int64"]).columns
     variances = df[numeric_cols].var()
     low_var = variances[variances < variance_threshold].index.tolist()
+    # Filter out protected features from the low variance drop list
+    low_var = [c for c in low_var if c not in PROTECTED]
+    
     dropped.extend([c for c in low_var if c not in dropped])
     
     # 3. High Correlation
@@ -339,8 +345,9 @@ def identify_redundant_features(df: pd.DataFrame, variance_threshold: float = 0.
         corr = df[numeric_cols].corr().abs()
         upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
         to_drop_corr = [col for col in upper.columns if any(upper[col] > correlation_threshold)]
-        protected = {"MonetaryTotal", "Frequency", "Recency", "Churn", "Age"}
-        to_drop_corr = [c for c in to_drop_corr if c not in protected]
+        
+        # Filter out protected features from correlation drop list
+        to_drop_corr = [c for c in to_drop_corr if c not in PROTECTED]
         dropped.extend([c for c in to_drop_corr if c not in dropped])
         
     return list(set(dropped))

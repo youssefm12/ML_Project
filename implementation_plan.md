@@ -288,24 +288,21 @@ The proposed fix requires partially rewriting `src/preprocessing.py` to decouple
 ## **PHASE 4: DEPLOYMENT & PRODUCTION**
 
 ### **Epic 4.1: Flask API Development**
-- **Task 4.1.1**: Create Flask application structure (`app/`)
-  - Initialize Flask app with blueprints:
-    - `app/__init__.py`: App factory pattern
-    - `app/routes.py`: API endpoints
-    - `app/models.py`: Load trained ML models
-    - `app/schemas.py`: Request/response validation
-  - Configure CORS for frontend access
+- **Task 4.1.1**: Create robust Flask application structure (`app/`)
+  - Initial directory scaffolding: 
+    - `app/app.py`: Main Flask initialization script.
+    - `app/routes.py`: Controller mapping HTTP endpoints to ML models.
+    - `app/templates/`: Jinja2 Web UI Frontends.
+  - Load joblib models (Classification, Regression, Scalers, PCA) upon server boot to minimize inference latency.
 
-- **Task 4.1.2**: Implement prediction API endpoints
+- **Task 4.1.2**: Implement inference prediction endpoints
   - **POST `/api/predict/churn`**:
-    - Accept customer features as JSON
-    - Preprocess input (scaling, encoding)
-    - Return churn probability and risk level
+    - Validate parsed JSON instantly with Phase 3's `CustomerInferencePayload` Pydantic models.
+    - Funnel safe payload through `src.preprocessing` transformations.
+    - Inject into `logistic_regression.joblib` and return strict `{"churn_probability": 0.xx, "risk_level": "High/Low"}` formats.
   - **POST `/api/predict/revenue`**:
-    - Predict expected customer lifetime value
-  - **POST `/api/cluster`**:
-    - Return customer segment label
-  - Add input validation and error handling
+    - Mirror Pydantic security to protect Ridge/RF predictions.
+  - Apply global error handling for missing inferences and boundary violations.
 
 - **Task 4.1.3**: Build batch prediction endpoint
   - **POST `/api/predict/batch`**:
@@ -359,41 +356,7 @@ The proposed fix requires partially rewriting `src/preprocessing.py` to decouple
   - Test handling of out-of-range values
   - Test handling of unseen categorical values
 
-### **Epic 4.4: Deployment & DevOps**
-- **Task 4.4.1**: Create Docker containerization
-  - Write `Dockerfile`:
-    - Base image: python:3.9-slim
-    - Install dependencies from requirements.txt
-    - Copy source code and models
-    - Expose port 5000
-  - Write `docker-compose.yml` for local development
 
-- **Task 4.4.2**: Set up CI/CD pipeline
-  - Configure GitHub Actions workflow:
-    - Run tests on every push
-    - Check code formatting (Black)
-    - Run linting (Flake8)
-    - Build Docker image
-    - Deploy to staging on merge to develop
-    - Deploy to production on merge to main
-
-- **Task 4.4.3**: Configure production deployment
-  - Use Gunicorn as WSGI server (4 workers)
-  - Set up reverse proxy with Nginx
-  - Configure SSL/TLS certificates
-  - Set environment variables (.env file)
-  - Deploy to cloud platform (AWS, Azure, GCP, or Heroku)
-
-- **Task 4.4.4**: Implement logging and monitoring
-  - Configure application logging:
-    - Log all predictions with timestamps
-    - Log errors and exceptions
-    - Rotate log files daily
-  - Set up monitoring:
-    - Track API response times
-    - Monitor error rates
-    - Alert on anomalies
-  - Use tools like Prometheus + Grafana or ELK stack
 
 ### **Epic 4.5: Documentation & Knowledge Transfer**
 - **Task 4.5.1**: Create API documentation
