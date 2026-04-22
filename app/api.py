@@ -51,6 +51,20 @@ def align_and_scale(payload_dict: Dict[str, Any]) -> pd.DataFrame:
     return processed_df
 
 
+def _inverse_scale_revenue(scaled_pred: float) -> float:
+    try:
+        scaler = registry.get("robust_scaler")
+        features = list(scaler.feature_names_in_)
+        if "MonetaryTotal" in features:
+            idx = features.index("MonetaryTotal")
+            dummy = np.zeros((1, len(features)))
+            dummy[0, idx] = scaled_pred
+            unscaled = scaler.inverse_transform(dummy)[0, idx]
+            return float(max(0.0, unscaled))
+    except Exception as e:
+        logger.warning(f"Failed to reverse scale revenue: {e}")
+    return float(max(0.0, scaled_pred))
+
 def get_churn_prediction(payload_json: Dict[str, Any]) -> Dict[str, Any]:
     """Execute Churn Classification inference with Pydantic boundary check."""
     try:
@@ -66,7 +80,8 @@ def get_churn_prediction(payload_json: Dict[str, Any]) -> Dict[str, Any]:
         reg_features = registry.get("reg_features")
         
         prob_churn = float(model.predict_proba(processed_df[clf_features])[0][1])
-        pred_rev = float(registry.get("revenue_reg").predict(processed_df[reg_features])[0])
+        scaled_pred_rev = float(registry.get("revenue_reg").predict(processed_df[reg_features])[0])
+        pred_rev = _inverse_scale_revenue(scaled_pred_rev)
         
         risk_level = "High Risk" if prob_churn > 0.45 else "Low Risk"
         
@@ -97,7 +112,8 @@ def get_revenue_forecast(payload_json: Dict[str, Any]) -> Dict[str, Any]:
         model = registry.get("revenue_reg")
         reg_features = registry.get("reg_features")
         
-        pred = float(model.predict(processed_df[reg_features])[0])
+        scaled_pred = float(model.predict(processed_df[reg_features])[0])
+        pred = _inverse_scale_revenue(scaled_pred)
         
         return {
             "success": True,

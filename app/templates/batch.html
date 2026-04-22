@@ -173,9 +173,14 @@
 
         document.getElementById('download-btn').onclick = () => {
             const a = document.createElement('a');
+            a.style.display = 'none';
             a.href = blobUrl;
-            a.download = `Risk_Audit_${new Date().toISOString().split('T')[0]}.csv`;
+            a.setAttribute('download', 'Risk_Audit_Report.csv');
+            document.body.appendChild(a);
             a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+            }, 100);
         };
 
         function showToast(msg) {
